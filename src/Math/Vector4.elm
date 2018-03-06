@@ -45,8 +45,7 @@ The set functions create a new copy of the vector, updating a single field.
 
 # Operations
 
-@docs add, sub, negate, scale, dot, normalize, direction,
-length, lengthSquared, distance, distanceSquared
+@docs add, sub, negate, scale, dot, normalize, direction, length, lengthSquared, distance, distanceSquared
 
 
 # Conversions
