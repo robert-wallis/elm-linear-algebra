@@ -98,15 +98,15 @@ setY y v =
 {-| Convert a vector to a tuple.
 -}
 toTuple : Vec2 -> ( Float, Float )
-toTuple v =
-    ( v.x, v.y )
+toTuple { x, y } =
+    ( x, y )
 
 
 {-| Convert a vector to a record.
 -}
 toRecord : Vec2 -> { x : Float, y : Float }
-toRecord v =
-    v
+toRecord { x, y } =
+    Vec2 x y
 
 
 {-| Convert a tuple to a vector.
@@ -154,25 +154,22 @@ direction a b =
 
         im =
             1.0 / sqrt (i.x * i.x + i.y * i.y)
-
-        j =
-            Vec2 (i.x * im) (i.y * im)
     in
-    j
+    Vec2 (i.x * im) (i.y * im)
 
 
 {-| The length of the given vector: |a|
 -}
 length : Vec2 -> Float
-length v =
-    sqrt (v.x * v.x + v.y * v.y)
+length { x, y } =
+    sqrt (x * x + y * y)
 
 
 {-| The square of the length of the given vector: |a| * |a|
 -}
 lengthSquared : Vec2 -> Float
-lengthSquared v =
-    v.x * v.x + v.y * v.y
+lengthSquared { x, y } =
+    x * x + y * y
 
 
 {-| The distance between two vectors.
@@ -206,19 +203,19 @@ distanceSquared a b =
 {-| A unit vector with the same direction as the given vector: a / |a|
 -}
 normalize : Vec2 -> Vec2
-normalize v =
+normalize { x, y } =
     let
         im =
-            1.0 / sqrt (v.x * v.x + v.y * v.y)
+            1.0 / sqrt (x * x + y * y)
     in
-    Vec2 (v.x * im) (v.y * im)
+    Vec2 (x * im) (y * im)
 
 
 {-| Multiply the vector by a scalar: s * v
 -}
 scale : Float -> Vec2 -> Vec2
-scale k v =
-    Vec2 (v.x * k) (v.y * k)
+scale k { x, y } =
+    Vec2 (x * k) (y * k)
 
 
 {-| The dot product of a and b
