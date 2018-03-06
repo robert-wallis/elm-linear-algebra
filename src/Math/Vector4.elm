@@ -27,8 +27,9 @@ module Math.Vector4
         , vec4
         )
 
-{-| A high performance linear algebra library using native JS arrays. Geared
-towards 3D graphics and use with `Graphics.WebGL`. All vectors are immutable.
+{-| A linear algebra library using pure Elm.
+Geared towards 3D graphics and use with `Graphics.WebGL`.
+All vectors are immutable.
 
 
 # Create
@@ -54,178 +55,207 @@ The set functions create a new copy of the vector, updating a single field.
 
 -}
 
-import Native.Math.Vector4
-
 
 {-| Four dimensional vector type
 -}
-type Vec4
-    = Vec4
+type alias Vec4 =
+    { x : Float
+    , y : Float
+    , z : Float
+    , w : Float
+    }
 
 
 {-| Creates a new 4-element vector with the given x, y, z, and w values.
 -}
 vec4 : Float -> Float -> Float -> Float -> Vec4
-vec4 =
-    Native.Math.Vector4.vec4
+vec4 x y z w =
+    Vec4 x y z w
 
 
 {-| Extract the x component of a vector.
 -}
 getX : Vec4 -> Float
-getX =
-    Native.Math.Vector4.getX
+getX v =
+    v.x
 
 
 {-| Extract the y component of a vector.
 -}
 getY : Vec4 -> Float
-getY =
-    Native.Math.Vector4.getY
+getY v =
+    v.y
 
 
 {-| Extract the z component of a vector.
 -}
 getZ : Vec4 -> Float
-getZ =
-    Native.Math.Vector4.getZ
+getZ v =
+    v.z
 
 
 {-| Extract the w component of a vector.
 -}
 getW : Vec4 -> Float
-getW =
-    Native.Math.Vector4.getW
+getW v =
+    v.w
 
 
 {-| Update the x component of a vector, returning a new vector.
 -}
 setX : Float -> Vec4 -> Vec4
-setX =
-    Native.Math.Vector4.setX
+setX x v =
+    { v | x = x }
 
 
 {-| Update the y component of a vector, returning a new vector.
 -}
 setY : Float -> Vec4 -> Vec4
-setY =
-    Native.Math.Vector4.setY
+setY y v =
+    { v | y = y }
 
 
 {-| Update the z component of a vector, returning a new vector.
 -}
 setZ : Float -> Vec4 -> Vec4
-setZ =
-    Native.Math.Vector4.setZ
+setZ z v =
+    { v | z = z }
 
 
 {-| Update the w component of a vector, returning a new vector.
 -}
 setW : Float -> Vec4 -> Vec4
-setW =
-    Native.Math.Vector4.setW
+setW w v =
+    { v | w = w }
 
 
 {-| Convert a vector to a tuple.
 -}
 toTuple : Vec4 -> ( Float, Float, Float, Float )
-toTuple =
-    Native.Math.Vector4.toTuple
+toTuple { x, y, z, w } =
+    ( x, y, z, w )
 
 
 {-| Convert a vector to a record.
 -}
 toRecord : Vec4 -> { x : Float, y : Float, z : Float, w : Float }
-toRecord =
-    Native.Math.Vector4.toRecord
+toRecord { x, y, z, w } =
+    Vec4 x y z w
 
 
 {-| Convert a tuple to a vector.
 -}
 fromTuple : ( Float, Float, Float, Float ) -> Vec4
-fromTuple =
-    Native.Math.Vector4.fromTuple
+fromTuple ( x, y, z, w ) =
+    Vec4 x y z w
 
 
 {-| Convert a record to a vector.
 -}
 fromRecord : { x : Float, y : Float, z : Float, w : Float } -> Vec4
-fromRecord =
-    Native.Math.Vector4.fromRecord
+fromRecord { x, y, z, w } =
+    Vec4 x y z w
 
 
 {-| Vector addition: a + b
 -}
 add : Vec4 -> Vec4 -> Vec4
-add =
-    Native.Math.Vector4.add
+add a b =
+    Vec4
+        (a.x + b.x)
+        (a.y + b.y)
+        (a.z + b.z)
+        (a.w + b.w)
 
 
 {-| Vector subtraction: a - b
 -}
 sub : Vec4 -> Vec4 -> Vec4
-sub =
-    Native.Math.Vector4.sub
+sub a b =
+    Vec4
+        (a.x - b.x)
+        (a.y - b.y)
+        (a.z - b.z)
+        (a.w - b.w)
 
 
 {-| Vector negation: -a
 -}
 negate : Vec4 -> Vec4
-negate =
-    Native.Math.Vector4.neg
+negate { x, y, z, w } =
+    Vec4 -x -y -z -w
 
 
 {-| The normalized direction from b to a: (a - b) / |a - b|
 -}
 direction : Vec4 -> Vec4 -> Vec4
-direction =
-    Native.Math.Vector4.direction
+direction a b =
+    let
+        ( x, y, z, w ) =
+            ( a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w )
+
+        im =
+            sqrt (x * x + y * y + z * z + w * w)
+    in
+    Vec4 (a.x * im) (a.y * im) (a.z * im) (a.w * im)
 
 
 {-| The length of the given vector: |a|
 -}
 length : Vec4 -> Float
-length =
-    Native.Math.Vector4.length
+length { x, y, z, w } =
+    sqrt (x * x + y * y + z * z + w * w)
 
 
 {-| The square of the length of the given vector: |a| * |a|
 -}
 lengthSquared : Vec4 -> Float
-lengthSquared =
-    Native.Math.Vector4.lengthSquared
+lengthSquared { x, y, z, w } =
+    x * x + y * y + z * z + w * w
 
 
 {-| The distance between two vectors.
 -}
 distance : Vec4 -> Vec4 -> Float
-distance =
-    Native.Math.Vector4.distance
+distance a b =
+    let
+        ( x, y, z, w ) =
+            ( a.x - b.z, a.y - b.y, a.z - b.z, a.w - b.w )
+    in
+    sqrt (x * x + y * y + z * z + w * w)
 
 
 {-| The square of the distance between two vectors.
 -}
 distanceSquared : Vec4 -> Vec4 -> Float
-distanceSquared =
-    Native.Math.Vector4.distanceSquared
+distanceSquared a b =
+    let
+        ( x, y, z, w ) =
+            ( a.x - b.z, a.y - b.y, a.z - b.z, a.w - b.w )
+    in
+    x * x + y * y + z * z + w * w
 
 
 {-| A unit vector with the same direction as the given vector: a / |a|
 -}
 normalize : Vec4 -> Vec4
-normalize =
-    Native.Math.Vector4.normalize
+normalize { x, y, z, w } =
+    let
+        im =
+            1.0 / sqrt (x * x + y * y + z * z + w * w)
+    in
+    Vec4 (x * im) (y * im) (z * im) (w * im)
 
 
 {-| Multiply the vector by a scalar: s * v
 -}
 scale : Float -> Vec4 -> Vec4
-scale =
-    Native.Math.Vector4.scale
+scale s { x, y, z, w } =
+    Vec4 (s * x) (s * y) (s * z) (s * w)
 
 
 {-| The dot product of a and b
 -}
 dot : Vec4 -> Vec4 -> Float
-dot =
-    Native.Math.Vector4.dot
+dot a b =
+    a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
