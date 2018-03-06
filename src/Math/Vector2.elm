@@ -23,8 +23,9 @@ module Math.Vector2
         , vec2
         )
 
-{-| A high performance linear algebra library using native JS arrays. Geared
-towards 3D graphics and use with `Graphics.WebGL`. All vectors are immutable.
+{-| A linear algebra library using pure Elm.
+Geared towards 3D graphics and use with `Graphics.WebGL`.
+All vectors are immutable.
 
 
 # Create
@@ -50,150 +51,178 @@ The set functions create a new copy of the vector, updating a single field.
 
 -}
 
-import Native.Math.Vector2
-
 
 {-| Two dimensional vector type
 -}
-type Vec2
-    = Vec2
+type alias Vec2 =
+    { x : Float
+    , y : Float
+    }
 
 
 {-| Creates a new 2-element vector with the given values.
 -}
 vec2 : Float -> Float -> Vec2
-vec2 =
-    Native.Math.Vector2.vec2
+vec2 x y =
+    Vec2 x y
 
 
 {-| Extract the x component of a vector.
 -}
 getX : Vec2 -> Float
-getX =
-    Native.Math.Vector2.getX
+getX v =
+    v.x
 
 
 {-| Extract the y component of a vector.
 -}
 getY : Vec2 -> Float
-getY =
-    Native.Math.Vector2.getY
+getY v =
+    v.y
 
 
 {-| Update the x component of a vector, returning a new vector.
 -}
 setX : Float -> Vec2 -> Vec2
-setX =
-    Native.Math.Vector2.setX
+setX x v =
+    { v | x = x }
 
 
 {-| Update the y component of a vector, returning a new vector.
 -}
 setY : Float -> Vec2 -> Vec2
-setY =
-    Native.Math.Vector2.setY
+setY y v =
+    { v | y = y }
 
 
 {-| Convert a vector to a tuple.
 -}
 toTuple : Vec2 -> ( Float, Float )
-toTuple =
-    Native.Math.Vector2.toTuple
+toTuple v =
+    ( v.x, v.y )
 
 
 {-| Convert a vector to a record.
 -}
 toRecord : Vec2 -> { x : Float, y : Float }
-toRecord =
-    Native.Math.Vector2.toRecord
+toRecord v =
+    v
 
 
 {-| Convert a tuple to a vector.
 -}
 fromTuple : ( Float, Float ) -> Vec2
-fromTuple =
-    Native.Math.Vector2.fromTuple
+fromTuple ( x, y ) =
+    Vec2 x y
 
 
 {-| Convert a record to a vector.
 -}
 fromRecord : { x : Float, y : Float } -> Vec2
-fromRecord =
-    Native.Math.Vector2.fromRecord
+fromRecord { x, y } =
+    Vec2 x y
 
 
 {-| Vector addition: a + b
 -}
 add : Vec2 -> Vec2 -> Vec2
-add =
-    Native.Math.Vector2.add
+add a b =
+    Vec2 (a.x + a.y) (b.x + b.y)
 
 
 {-| Vector subtraction: a - b
 -}
 sub : Vec2 -> Vec2 -> Vec2
-sub =
-    Native.Math.Vector2.sub
+sub a b =
+    Vec2 (a.x - a.y) (b.x - b.y)
 
 
 {-| Vector negation: -a
 -}
 negate : Vec2 -> Vec2
-negate =
-    Native.Math.Vector2.neg
+negate { x, y } =
+    Vec2 -x -y
 
 
 {-| The normalized direction from b to a: (a - b) / |a - b|
 -}
 direction : Vec2 -> Vec2 -> Vec2
-direction =
-    Native.Math.Vector2.direction
+direction a b =
+    let
+        i =
+            Vec2 (a.x - b.x) (a.y - b.y)
+
+        im =
+            1.0 / sqrt (i.x * i.x + i.y * i.y)
+
+        j =
+            Vec2 (i.x * im) (i.y * im)
+    in
+    j
 
 
 {-| The length of the given vector: |a|
 -}
 length : Vec2 -> Float
-length =
-    Native.Math.Vector2.length
+length v =
+    sqrt (v.x * v.x + v.y * v.y)
 
 
 {-| The square of the length of the given vector: |a| * |a|
 -}
 lengthSquared : Vec2 -> Float
-lengthSquared =
-    Native.Math.Vector2.lengthSquared
+lengthSquared v =
+    v.x * v.x + v.y * v.y
 
 
 {-| The distance between two vectors.
 -}
 distance : Vec2 -> Vec2 -> Float
-distance =
-    Native.Math.Vector2.distance
+distance a b =
+    let
+        dx =
+            a.x - b.x
+
+        dy =
+            a.y - b.y
+    in
+    sqrt (dx * dx + dy * dy)
 
 
 {-| The square of the distance between two vectors.
 -}
 distanceSquared : Vec2 -> Vec2 -> Float
-distanceSquared =
-    Native.Math.Vector2.distanceSquared
+distanceSquared a b =
+    let
+        dx =
+            a.x - b.x
+
+        dy =
+            a.y - b.y
+    in
+    dx * dx + dy * dy
 
 
 {-| A unit vector with the same direction as the given vector: a / |a|
 -}
 normalize : Vec2 -> Vec2
-normalize =
-    Native.Math.Vector2.normalize
+normalize v =
+    let
+        im =
+            1.0 / sqrt (v.x * v.x + v.y * v.y)
+    in
+    Vec2 (v.x * im) (v.y * im)
 
 
 {-| Multiply the vector by a scalar: s * v
 -}
 scale : Float -> Vec2 -> Vec2
-scale =
-    Native.Math.Vector2.scale
+scale k v =
+    Vec2 (v.x * k) (v.y * k)
 
 
 {-| The dot product of a and b
 -}
 dot : Vec2 -> Vec2 -> Float
-dot =
-    Native.Math.Vector2.dot
+dot a b =
+    a.x * b.x + a.y * b.y
