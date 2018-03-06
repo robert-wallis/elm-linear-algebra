@@ -29,8 +29,9 @@ module Math.Vector3
         , vec3
         )
 
-{-| A high performance linear algebra library using native JS arrays. Geared
-towards 3D graphics and use with `Graphics.WebGL`. All vectors are immutable.
+{-| A linear algebra library using pure Elm.
+Geared towards 3D graphics and use with `Graphics.WebGL`.
+All vectors are immutable.
 
 
 # Create
@@ -56,192 +57,221 @@ The set functions create a new copy of the vector, updating a single field.
 
 -}
 
-import Native.MJS
-
 
 {-| Three dimensional vector type
 -}
-type Vec3
-    = Vec3
+type alias Vec3 =
+    { x : Float
+    , y : Float
+    , z : Float
+    }
 
 
 {-| Creates a new 3-element vector with the given values.
 -}
 vec3 : Float -> Float -> Float -> Vec3
-vec3 =
-    Native.MJS.vec3
+vec3 x y z =
+    Vec3 x y z
 
 
 {-| The unit vector &icirc; which points in the x direction: `vec3 1 0 0`
 -}
 i : Vec3
 i =
-    Native.MJS.vec3 1 0 0
+    Vec3 1 0 0
 
 
 {-| The unit vector &jcirc; which points in the y direction: `vec3 0 1 0`
 -}
 j : Vec3
 j =
-    Native.MJS.vec3 0 1 0
+    Vec3 0 1 0
 
 
 {-| The unit vector k&#0770; which points in the z direction: `vec3 0 0 1`
 -}
 k : Vec3
 k =
-    Native.MJS.vec3 0 0 1
+    Vec3 0 0 1
 
 
 {-| Extract the x component of a vector.
 -}
 getX : Vec3 -> Float
-getX =
-    Native.MJS.v3getX
+getX v =
+    v.x
 
 
 {-| Extract the y component of a vector.
 -}
 getY : Vec3 -> Float
-getY =
-    Native.MJS.v3getY
+getY v =
+    v.y
 
 
 {-| Extract the z component of a vector.
 -}
 getZ : Vec3 -> Float
-getZ =
-    Native.MJS.v3getZ
+getZ v =
+    v.z
 
 
 {-| Update the x component of a vector, returning a new vector.
 -}
 setX : Float -> Vec3 -> Vec3
-setX =
-    Native.MJS.v3setX
+setX x v =
+    { v | x = x }
 
 
 {-| Update the y component of a vector, returning a new vector.
 -}
 setY : Float -> Vec3 -> Vec3
-setY =
-    Native.MJS.v3setY
+setY y v =
+    { v | y = y }
 
 
 {-| Update the z component of a vector, returning a new vector.
 -}
 setZ : Float -> Vec3 -> Vec3
-setZ =
-    Native.MJS.v3setZ
+setZ z v =
+    { v | z = z }
 
 
 {-| Convert a vector to a tuple.
 -}
 toTuple : Vec3 -> ( Float, Float, Float )
-toTuple =
-    Native.MJS.toTuple3
+toTuple { x, y, z } =
+    ( x, y, z )
 
 
 {-| Convert a vector to a record.
 -}
 toRecord : Vec3 -> { x : Float, y : Float, z : Float }
-toRecord =
-    Native.MJS.toRecord3
+toRecord { x, y, z } =
+    Vec3 x y z
 
 
 {-| Convert a tuple to a vector.
 -}
 fromTuple : ( Float, Float, Float ) -> Vec3
-fromTuple =
-    Native.MJS.fromTuple3
+fromTuple ( x, y, z ) =
+    Vec3 x y z
 
 
 {-| Convert a record to a vector.
 -}
 fromRecord : { x : Float, y : Float, z : Float } -> Vec3
-fromRecord =
-    Native.MJS.fromRecord3
+fromRecord { x, y, z } =
+    Vec3 x y z
 
 
 {-| Vector addition: a + b
 -}
 add : Vec3 -> Vec3 -> Vec3
-add =
-    Native.MJS.v3add
+add a b =
+    Vec3
+        (a.x + b.x)
+        (a.y + b.y)
+        (a.z + b.z)
 
 
 {-| Vector subtraction: a - b
 -}
 sub : Vec3 -> Vec3 -> Vec3
-sub =
-    Native.MJS.v3sub
+sub a b =
+    Vec3
+        (a.x - b.x)
+        (a.y - b.y)
+        (a.z - b.z)
 
 
 {-| Vector negation: -a
 -}
 negate : Vec3 -> Vec3
-negate =
-    Native.MJS.v3neg
+negate { x, y, z } =
+    Vec3 -x -y -z
 
 
 {-| The normalized direction from b to a: (a - b) / |a - b|
 -}
 direction : Vec3 -> Vec3 -> Vec3
-direction =
-    Native.MJS.v3direction
+direction a b =
+    let
+        ( x, y, z ) =
+            ( a.x - b.x, a.y - b.y, a.z - b.z )
+
+        im =
+            sqrt (x * x + y * y + z * z)
+    in
+    Vec3 (a.x * im) (a.y * im) (a.z * im)
 
 
 {-| The length of the given vector: |a|
 -}
 length : Vec3 -> Float
-length =
-    Native.MJS.v3length
+length { x, y, z } =
+    sqrt (x * x + y * y + z * z)
 
 
 {-| The square of the length of the given vector: |a| * |a|
 -}
 lengthSquared : Vec3 -> Float
-lengthSquared =
-    Native.MJS.v3lengthSquared
+lengthSquared { x, y, z } =
+    x * x + y * y + z * z
 
 
 {-| The distance between two vectors.
 -}
 distance : Vec3 -> Vec3 -> Float
-distance =
-    Native.MJS.v3distance
+distance a b =
+    let
+        ( x, y, z ) =
+            ( a.x - b.z, a.y - b.y, a.z - b.z )
+    in
+    sqrt (x * x + y * y + z * z)
 
 
 {-| The square of the distance between two vectors.
 -}
 distanceSquared : Vec3 -> Vec3 -> Float
-distanceSquared =
-    Native.MJS.v3distanceSquared
+distanceSquared a b =
+    let
+        ( x, y, z ) =
+            ( a.x - b.z, a.y - b.y, a.z - b.z )
+    in
+    x * x + y * y + z * z
 
 
 {-| A unit vector with the same direction as the given vector: a / |a|
 -}
 normalize : Vec3 -> Vec3
-normalize =
-    Native.MJS.v3normalize
+normalize { x, y, z } =
+    let
+        im =
+            1.0 / sqrt (x * x + y * y + z * z)
+    in
+    Vec3 (x * im) (y * im) (z * im)
 
 
 {-| Multiply the vector by a scalar: s * v
 -}
 scale : Float -> Vec3 -> Vec3
-scale =
-    Native.MJS.v3scale
+scale s { x, y, z } =
+    Vec3 (s * x) (s * y) (s * z)
 
 
 {-| The dot product of a and b
 -}
 dot : Vec3 -> Vec3 -> Float
-dot =
-    Native.MJS.v3dot
+dot a b =
+    a.x * b.x + a.y * b.y + a.z * b.z
 
 
 {-| The cross product of a and b
 -}
 cross : Vec3 -> Vec3 -> Vec3
-cross =
-    Native.MJS.v3cross
+cross a b =
+    Vec3
+        (a.y * b.z - a.z - b.y)
+        (a.z * b.x - a.x * b.z)
+        (a.x * b.y - a.y * b.x)
