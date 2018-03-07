@@ -364,8 +364,8 @@ transpose { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24
 {-| Creates a transform from a basis consisting of 3 linearly independent vectors.
 -}
 makeBasis : Vec3 -> Vec3 -> Vec3 -> Mat4
-makeBasis =
-    Native.MJS.m4x4makeBasis
+makeBasis x y z =
+    Mat4 x.x x.y x.z 0 y.x y.y y.z 0 z.x z.y z.z 0 0 0 0 1
 
 
 {-| Creates a matrix from a list of elements. Returns Nothing if the length of
