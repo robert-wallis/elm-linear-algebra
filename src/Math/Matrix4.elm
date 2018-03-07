@@ -65,7 +65,7 @@ All matrices are immutable.
 
 -}
 
-import Math.Vector3 exposing (Vec3)
+import Math.Vector3 exposing (Vec3, dot)
 import Native.MJS
 
 
@@ -167,8 +167,22 @@ orthonormal. This algorithm is more efficient than general matrix inversion, and
 has no possibility of failing.
 -}
 inverseOrthonormal : Mat4 -> Mat4
-inverseOrthonormal =
-    Native.MJS.m4x4inverseOrthonormal
+inverseOrthonormal m =
+    let
+        r =
+            transpose m
+
+        t =
+            Vec3 m.m41 m.m42 m.m43
+    in
+    { r
+        | m14 = 0
+        , m24 = 0
+        , m34 = 0
+        , m41 = -(dot (Vec3 r.m11 r.m21 r.m31) t)
+        , m42 = -(dot (Vec3 m.m12 m.m22 m.m32) t)
+        , m43 = -(dot (Vec3 m.m13 m.m23 m.m33) t)
+    }
 
 
 {-| Creates a matrix for a projection frustum with the given parameters.
