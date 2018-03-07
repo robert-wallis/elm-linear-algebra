@@ -29,12 +29,9 @@ module Math.Matrix4
         , transpose
         )
 
-{-| A high performance linear algebra library using native JS arrays. Geared
-towards 3D graphics and use with `Graphics.WebGL`. All matrices are immutable.
-
-This library uses the convention that the prefix `make` is creating a new
-array,as without the prefix, you are applying some transform to an
-existing matrix.
+{-| A linear algebra library using pure Elm.
+Geared towards 3D graphics and use with `Graphics.WebGL`.
+All matrices are immutable.
 
 
 # Create
@@ -74,8 +71,24 @@ import Native.MJS
 
 {-| 4x4 matrix type
 -}
-type Mat4
-    = Mat4
+type alias Mat4 =
+    { m11 : Float
+    , m21 : Float
+    , m31 : Float
+    , m41 : Float
+    , m12 : Float
+    , m22 : Float
+    , m32 : Float
+    , m42 : Float
+    , m13 : Float
+    , m23 : Float
+    , m33 : Float
+    , m43 : Float
+    , m14 : Float
+    , m24 : Float
+    , m34 : Float
+    , m44 : Float
+    }
 
 
 {-| Multiply a vector by a 4x4 matrix: m * v
@@ -89,15 +102,64 @@ transform =
 -}
 identity : Mat4
 identity =
-    Native.MJS.m4x4identity
+    Mat4 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 1
 
 
 {-| Computes the inverse of any matrix. This is somewhat computationally
 intensive. If the matrix is not invertible, `Nothing` is returned.
 -}
 inverse : Mat4 -> Maybe Mat4
-inverse =
-    Native.MJS.m4x4inverse
+inverse { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    let
+        -- https://stackoverflow.com/questions/1148309/inverting-a-4x4-matrix
+        inv =
+            Mat4
+                (m22 * m33 * m44 - m22 * m43 * m34 - m23 * m32 * m44 + m23 * m42 * m34 + m24 * m32 * m43 - m24 * m42 * m33)
+                (-m21 * m33 * m44 + m21 * m43 * m34 + m23 * m31 * m44 - m23 * m41 * m34 - m24 * m31 * m43 + m24 * m41 * m33)
+                (m21 * m32 * m44 - m21 * m42 * m34 - m22 * m31 * m44 + m22 * m41 * m34 + m24 * m31 * m42 - m24 * m41 * m32)
+                (-m21 * m32 * m43 + m21 * m42 * m33 + m22 * m31 * m43 - m22 * m41 * m33 - m23 * m31 * m42 + m23 * m41 * m32)
+                (-m12 * m33 * m44 + m12 * m43 * m34 + m13 * m32 * m44 - m13 * m42 * m34 - m14 * m32 * m43 + m14 * m42 * m33)
+                (m11 * m33 * m44 - m11 * m43 * m34 - m13 * m31 * m44 + m13 * m41 * m34 + m14 * m31 * m43 - m14 * m41 * m33)
+                (-m11 * m32 * m44 + m11 * m42 * m34 + m12 * m31 * m44 - m12 * m41 * m34 - m14 * m31 * m42 + m14 * m41 * m32)
+                (m11 * m32 * m43 - m11 * m42 * m33 - m12 * m31 * m43 + m12 * m41 * m33 + m13 * m31 * m42 - m13 * m41 * m32)
+                (m12 * m23 * m44 - m12 * m43 * m24 - m13 * m22 * m44 + m13 * m42 * m24 + m14 * m22 * m43 - m14 * m42 * m23)
+                (-m11 * m23 * m44 + m11 * m43 * m24 + m13 * m21 * m44 - m13 * m41 * m24 - m14 * m21 * m43 + m14 * m41 * m23)
+                (m11 * m22 * m44 - m11 * m42 * m24 - m12 * m21 * m44 + m12 * m41 * m24 + m14 * m21 * m42 - m14 * m41 * m22)
+                (-m11 * m22 * m43 + m11 * m42 * m23 + m12 * m21 * m43 - m12 * m41 * m23 - m13 * m21 * m42 + m13 * m41 * m22)
+                (-m12 * m23 * m34 + m12 * m33 * m24 + m13 * m22 * m34 - m13 * m32 * m24 - m14 * m22 * m33 + m14 * m32 * m23)
+                (m11 * m23 * m34 - m11 * m33 * m24 - m13 * m21 * m34 + m13 * m31 * m24 + m14 * m21 * m33 - m14 * m31 * m23)
+                (-m11 * m22 * m34 + m11 * m32 * m24 + m12 * m21 * m34 - m12 * m31 * m24 - m14 * m21 * m32 + m14 * m31 * m22)
+                (m11 * m22 * m33 - m11 * m32 * m23 - m12 * m21 * m33 + m12 * m31 * m23 + m13 * m21 * m32 - m13 * m31 * m22)
+
+        det =
+            m11 * inv.m11 + m21 * inv.m12 + m31 * inv.m13 + m41 * inv.m14
+    in
+    case det of
+        0 ->
+            Nothing
+
+        _ ->
+            let
+                d =
+                    1 / det
+            in
+            Mat4
+                (inv.m11 * d)
+                (inv.m21 * d)
+                (inv.m31 * d)
+                (inv.m41 * d)
+                (inv.m12 * d)
+                (inv.m22 * d)
+                (inv.m32 * d)
+                (inv.m42 * d)
+                (inv.m13 * d)
+                (inv.m23 * d)
+                (inv.m33 * d)
+                (inv.m43 * d)
+                (inv.m14 * d)
+                (inv.m24 * d)
+                (inv.m34 * d)
+                (inv.m44 * d)
 
 
 {-| Computes the inverse of the given matrix, assuming that the matrix is
