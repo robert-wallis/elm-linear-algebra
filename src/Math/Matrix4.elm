@@ -66,6 +66,7 @@ All matrices are immutable.
 -}
 
 import Math.Vector3 exposing (Vec3, dot)
+import Maybe
 import Native.MJS
 
 
@@ -143,23 +144,25 @@ inverse { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, 
                 d =
                     1 / det
             in
-            Mat4
-                (inv.m11 * d)
-                (inv.m21 * d)
-                (inv.m31 * d)
-                (inv.m41 * d)
-                (inv.m12 * d)
-                (inv.m22 * d)
-                (inv.m32 * d)
-                (inv.m42 * d)
-                (inv.m13 * d)
-                (inv.m23 * d)
-                (inv.m33 * d)
-                (inv.m43 * d)
-                (inv.m14 * d)
-                (inv.m24 * d)
-                (inv.m34 * d)
-                (inv.m44 * d)
+            Just
+                (Mat4
+                    (inv.m11 * d)
+                    (inv.m21 * d)
+                    (inv.m31 * d)
+                    (inv.m41 * d)
+                    (inv.m12 * d)
+                    (inv.m22 * d)
+                    (inv.m32 * d)
+                    (inv.m42 * d)
+                    (inv.m13 * d)
+                    (inv.m23 * d)
+                    (inv.m33 * d)
+                    (inv.m43 * d)
+                    (inv.m14 * d)
+                    (inv.m24 * d)
+                    (inv.m34 * d)
+                    (inv.m44 * d)
+                )
 
 
 {-| Computes the inverse of the given matrix, assuming that the matrix is
@@ -372,8 +375,13 @@ makeBasis x y z =
 the list is not exactly 16 (4x4).
 -}
 makeFromList : List Float -> Maybe Mat4
-makeFromList =
-    Native.MJS.m4x4fromList
+makeFromList list =
+    case list of
+        [ m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 ] ->
+            Just (Mat4 m11 m21 m31 m41 m12 m22 m32 m42 m13 m23 m33 m43 m14 m24 m34 m44)
+
+        _ ->
+            Nothing
 
 
 {-| Convert a matrix to a record.
