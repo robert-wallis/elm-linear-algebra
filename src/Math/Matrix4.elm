@@ -92,11 +92,19 @@ type alias Mat4 =
     }
 
 
-{-| Multiply a vector by a 4x4 matrix: m * v
+{-| Multiply a 3D vector by a 4x4 matrix: m * v
+The 4 element result vector is divided by the w component to make a 3 element result.
 -}
 transform : Mat4 -> Vec3 -> Vec3
-transform =
-    Native.MJS.v3mul4x4
+transform { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } v =
+    let
+        w =
+            dot v (Vec3 m14 m24 m34) + m44
+    in
+    Vec3
+        ((dot v (Vec3 m11 m21 m31) + m41) / w)
+        ((dot v (Vec3 m12 m22 m32) + m42) / w)
+        ((dot v (Vec3 m13 m23 m33) + m43) / w)
 
 
 {-| A matrix with all 0s, except 1s on the diagonal.
