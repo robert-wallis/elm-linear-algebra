@@ -65,9 +65,8 @@ All matrices are immutable.
 
 -}
 
-import Math.Vector3 exposing (Vec3, dot, normalize)
+import Math.Vector3 exposing (Vec3, cross, direction, dot, normalize)
 import Maybe
-import Native.MJS
 
 
 {-| 4x4 matrix type
@@ -604,8 +603,24 @@ Parameters:
 
 -}
 makeLookAt : Vec3 -> Vec3 -> Vec3 -> Mat4
-makeLookAt =
-    Native.MJS.m4x4makeLookAt
+makeLookAt eye center up =
+    let
+        vz =
+            direction eye center
+
+        vx =
+            normalize <| cross up vz
+
+        vy =
+            normalize <| cross vz vx
+
+        a =
+            Mat4 vx.x vy.x vz.x 0 vx.y vy.y vz.y 0 vz.x vz.y vz.z 0 0 0 0 1
+
+        b =
+            Mat4 0 0 0 0 0 1 0 0 0 0 1 0 -eye.x -eye.y -eye.z 1
+    in
+    mul a b
 
 
 {-| "Flip" the matrix across the diagonal by swapping row index and column
