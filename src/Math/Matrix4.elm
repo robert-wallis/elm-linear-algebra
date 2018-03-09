@@ -209,8 +209,24 @@ Parameters:
 
 -}
 makeFrustum : Float -> Float -> Float -> Float -> Float -> Float -> Mat4
-makeFrustum =
-    Native.MJS.m4x4makeFrustum
+makeFrustum left right bottom top zNear zFar =
+    Mat4
+        (2 * zNear / (right - left))
+        0
+        0
+        0
+        0
+        (2 * zNear / (top - bottom))
+        0
+        0
+        ((right + left) / (right - left))
+        ((top + bottom) / (top - bottom))
+        (-(zFar + zNear) / (zFar - zNear))
+        -1
+        0
+        0
+        (-2 * zFar * zNear / (zFar - zNear))
+        0
 
 
 {-| Creates a matrix for a perspective projection with the given parameters.
@@ -224,8 +240,21 @@ Parameters:
 
 -}
 makePerspective : Float -> Float -> Float -> Float -> Mat4
-makePerspective =
-    Native.MJS.m4x4makePerspective
+makePerspective fovY aspect zNear zFar =
+    let
+        yMin =
+            zNear * (tan fovY * pi / 360.0)
+
+        yMax =
+            -yMin
+
+        xMin =
+            yMax * aspect
+
+        xMax =
+            yMin * aspect
+    in
+    makeFrustum xMin xMax yMax yMin zNear zFar
 
 
 {-| Creates a matrix for an orthogonal frustum projection with the given parameters.
@@ -241,8 +270,24 @@ Parameters:
 
 -}
 makeOrtho : Float -> Float -> Float -> Float -> Float -> Float -> Mat4
-makeOrtho =
-    Native.MJS.m4x4makeOrtho
+makeOrtho left right bottom top zNear zFar =
+    Mat4
+        (2 / (right - left))
+        0
+        0
+        0
+        0
+        (2 / (top - bottom))
+        0
+        0
+        0
+        0
+        -(2 / (zFar - zNear))
+        0
+        -((right + left) / (right - left))
+        -((top + bottom) / (top - bottom))
+        -((zFar + zNear) / (zFar - zNear))
+        1
 
 
 {-| Creates a matrix for a 2D orthogonal frustum projection with the given
@@ -257,8 +302,8 @@ Parameters:
 
 -}
 makeOrtho2D : Float -> Float -> Float -> Float -> Mat4
-makeOrtho2D =
-    Native.MJS.m4x4makeOrtho2D
+makeOrtho2D left right bottom top =
+    makeOrtho left right bottom top -1 1
 
 
 {-| Matrix multiplcation: a * b
