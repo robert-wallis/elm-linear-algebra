@@ -65,7 +65,7 @@ All matrices are immutable.
 
 -}
 
-import Math.Vector3 exposing (Vec3, dot)
+import Math.Vector3 exposing (Vec3, dot, normalize)
 import Maybe
 import Native.MJS
 
@@ -306,93 +306,292 @@ makeOrtho2D left right bottom top =
     makeOrtho left right bottom top -1 1
 
 
-{-| Matrix multiplcation: a * b
+{-| Matrix multiplication: a * b
 -}
 mul : Mat4 -> Mat4 -> Mat4
-mul =
-    Native.MJS.m4x4mul
+mul a b =
+    Mat4
+        (a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31 + a.m14 * b.m41)
+        (a.m21 * b.m11 + a.m22 * b.m21 + a.m23 * b.m31 + a.m24 * b.m41)
+        (a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31 + a.m34 * b.m41)
+        (a.m41 * b.m11 + a.m42 * b.m21 + a.m43 * b.m31 + a.m44 * b.m41)
+        (a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32 + a.m14 * b.m42)
+        (a.m21 * b.m12 + a.m22 * b.m22 + a.m23 * b.m32 + a.m24 * b.m42)
+        (a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32 + a.m34 * b.m42)
+        (a.m41 * b.m12 + a.m42 * b.m22 + a.m43 * b.m32 + a.m44 * b.m42)
+        (a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33 + a.m14 * b.m43)
+        (a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33 + a.m24 * b.m43)
+        (a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33 + a.m34 * b.m43)
+        (a.m41 * b.m13 + a.m42 * b.m23 + a.m43 * b.m33 + a.m44 * b.m43)
+        (a.m11 * b.m14 + a.m12 * b.m24 + a.m13 * b.m34 + a.m14 * b.m44)
+        (a.m21 * b.m14 + a.m22 * b.m24 + a.m23 * b.m34 + a.m24 * b.m44)
+        (a.m31 * b.m14 + a.m32 * b.m24 + a.m33 * b.m34 + a.m34 * b.m44)
+        (a.m41 * b.m14 + a.m42 * b.m24 + a.m43 * b.m34 + a.m44 * b.m44)
 
 
 {-| Matrix multiplication, assuming a and b are affine: a * b
 -}
 mulAffine : Mat4 -> Mat4 -> Mat4
-mulAffine =
-    Native.MJS.m4x4mulAffine
+mulAffine a b =
+    Mat4
+        (a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31)
+        (a.m21 * b.m11 + a.m22 * b.m21 + a.m23 * b.m31)
+        (a.m31 * b.m11 + a.m32 * b.m21 + a.m33 * b.m31)
+        0
+        (a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32)
+        (a.m21 * b.m12 + a.m22 * b.m22 + a.m23 * b.m32)
+        (a.m31 * b.m12 + a.m32 * b.m22 + a.m33 * b.m32)
+        0
+        (a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33)
+        (a.m21 * b.m13 + a.m22 * b.m23 + a.m23 * b.m33)
+        (a.m31 * b.m13 + a.m32 * b.m23 + a.m33 * b.m33)
+        0
+        (a.m11 * b.m14 + a.m12 * b.m24 + a.m13 * b.m34 + a.m14)
+        (a.m21 * b.m14 + a.m22 * b.m24 + a.m23 * b.m34 + a.m24)
+        (a.m31 * b.m14 + a.m32 * b.m24 + a.m33 * b.m34 + a.m34)
+        1
 
 
 {-| Creates a transformation matrix for rotation in radians about the
 3-element vector axis.
 -}
 makeRotate : Float -> Vec3 -> Mat4
-makeRotate =
-    Native.MJS.m4x4makeRotate
+makeRotate angle axis =
+    let
+        { x, y, z } =
+            normalize axis
+
+        c =
+            cos angle
+
+        c1 =
+            1 - c
+
+        s =
+            sin angle
+    in
+    Mat4
+        (x * x * c1 + c)
+        (y * x * c1 + z * s)
+        (z * x * c1 - y * s)
+        0
+        (x * y * c1 - z * s)
+        (y * y * c1 + c)
+        (y * z * c1 + x * s)
+        0
+        (x * z * c1 + y * s)
+        (y * z * c1 - x * s)
+        (z * z * c1 + c)
+        0
+        0
+        0
+        0
+        1
 
 
 {-| Concatenates a rotation in radians about an axis to the given matrix.
 -}
 rotate : Float -> Vec3 -> Mat4 -> Mat4
-rotate =
-    Native.MJS.m4x4rotate
+rotate angle axis { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    let
+        c =
+            cos angle
+
+        c1 =
+            1 - c
+
+        s =
+            sin angle
+
+        { x, y, z } =
+            normalize axis
+
+        xs =
+            x * s
+
+        ys =
+            y * s
+
+        zs =
+            z * s
+
+        xyc1 =
+            x * y * c1
+
+        xzc1 =
+            x * z * c1
+
+        yzc1 =
+            y * z * c1
+
+        t11 =
+            x * x * c1 + c
+
+        t21 =
+            xyc1 + zs
+
+        t31 =
+            xzc1 - ys
+
+        t12 =
+            xyc1 - zs
+
+        t22 =
+            y * y * c1 + c
+
+        t32 =
+            yzc1 + xs
+
+        t13 =
+            xzc1 + ys
+
+        t23 =
+            yzc1 - xs
+
+        t33 =
+            z * z * c1 + c
+    in
+    Mat4
+        (m11 * t11 + m12 * t21 + m13 * t31)
+        (m21 * t11 + m22 * t21 + m23 * t31)
+        (m31 * t11 + m32 * t21 + m33 * t31)
+        (m41 * t11 + m42 * t21 + m43 * t31)
+        (m11 * t12 + m12 * t22 + m13 * t32)
+        (m21 * t12 + m22 * t22 + m23 * t32)
+        (m31 * t12 + m32 * t22 + m33 * t32)
+        (m41 * t12 + m42 * t22 + m43 * t32)
+        (m11 * t13 + m12 * t23 + m13 * t33)
+        (m21 * t13 + m22 * t23 + m23 * t33)
+        (m31 * t13 + m32 * t23 + m33 * t33)
+        (m41 * t13 + m42 * t23 + m43 * t33)
+        m14
+        m24
+        m34
+        m44
 
 
 {-| Creates a transformation matrix for scaling by 3 scalar values, one for
 each of the x, y, and z directions.
 -}
 makeScale3 : Float -> Float -> Float -> Mat4
-makeScale3 =
-    Native.MJS.m4x4makeScale3
+makeScale3 x y z =
+    Mat4 x 0 0 0 0 y 0 0 0 0 z 0 0 0 0 1
 
 
 {-| Creates a transformation matrix for scaling each of the x, y, and z axes by
 the amount given in the corresponding element of the 3-element vector.
 -}
 makeScale : Vec3 -> Mat4
-makeScale =
-    Native.MJS.m4x4makeScale
+makeScale { x, y, z } =
+    Mat4 x 0 0 0 0 y 0 0 0 0 z 0 0 0 0 1
 
 
 {-| Concatenates a scaling to the given matrix.
 -}
 scale3 : Float -> Float -> Float -> Mat4 -> Mat4
-scale3 =
-    Native.MJS.m4x4scale3
+scale3 x y z { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4
+        (m11 * x)
+        (m21 * x)
+        (m31 * x)
+        (m41 * x)
+        (m12 * y)
+        (m22 * y)
+        (m32 * y)
+        (m42 * y)
+        (m13 * z)
+        (m23 * z)
+        (m33 * z)
+        (m43 * z)
+        m14
+        m24
+        m34
+        m44
 
 
 {-| Concatenates a scaling to the given matrix.
 -}
 scale : Vec3 -> Mat4 -> Mat4
-scale =
-    Native.MJS.m4x4scale
+scale { x, y, z } { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4
+        (m11 * x)
+        (m21 * x)
+        (m31 * x)
+        (m41 * x)
+        (m12 * y)
+        (m22 * y)
+        (m32 * y)
+        (m42 * y)
+        (m13 * z)
+        (m23 * z)
+        (m33 * z)
+        (m43 * z)
+        m14
+        m24
+        m34
+        m44
 
 
 {-| Creates a transformation matrix for translating by 3 scalar values, one for
 each of the x, y, and z directions.
 -}
 makeTranslate3 : Float -> Float -> Float -> Mat4
-makeTranslate3 =
-    Native.MJS.m4x4makeTranslate3
+makeTranslate3 x y z =
+    Mat4 1 0 0 0 0 1 0 0 0 0 1 0 x y z 1
 
 
 {-| Creates a transformation matrix for translating each of the x, y, and z
 axes by the amount given in the corresponding element of the 3-element vector.
 -}
 makeTranslate : Vec3 -> Mat4
-makeTranslate =
-    Native.MJS.m4x4makeTranslate
+makeTranslate { x, y, z } =
+    Mat4 1 0 0 0 0 1 0 0 0 0 1 0 x y z 1
 
 
 {-| Concatenates a translation to the given matrix.
 -}
 translate3 : Float -> Float -> Float -> Mat4 -> Mat4
-translate3 =
-    Native.MJS.m4x4translate3
+translate3 x y z { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4
+        m11
+        m21
+        m31
+        m41
+        m12
+        m22
+        m32
+        m42
+        m13
+        m23
+        m33
+        m43
+        (m11 * x + m12 * y + m13 * z + m14)
+        (m21 * x + m22 * y + m23 * z + m24)
+        (m31 * x + m32 * y + m33 * z + m34)
+        (m41 * x + m42 * y + m43 * z + m44)
 
 
 {-| Concatenates a translation to the given matrix.
 -}
 translate : Vec3 -> Mat4 -> Mat4
-translate =
-    Native.MJS.m4x4translate
+translate { x, y, z } { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4
+        m11
+        m21
+        m31
+        m41
+        m12
+        m22
+        m32
+        m42
+        m13
+        m23
+        m33
+        m43
+        (m11 * x + m12 * y + m13 * z + m14)
+        (m21 * x + m22 * y + m23 * z + m24)
+        (m31 * x + m32 * y + m33 * z + m34)
+        (m41 * x + m42 * y + m43 * z + m44)
 
 
 {-| Creates a transformation matrix for a camera.
@@ -440,12 +639,12 @@ makeFromList list =
 {-| Convert a matrix to a record.
 -}
 toRecord : Mat4 -> { m11 : Float, m21 : Float, m31 : Float, m41 : Float, m12 : Float, m22 : Float, m32 : Float, m42 : Float, m13 : Float, m23 : Float, m33 : Float, m43 : Float, m14 : Float, m24 : Float, m34 : Float, m44 : Float }
-toRecord =
-    Native.MJS.m4x4toRecord
+toRecord { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4 m11 m21 m31 m41 m12 m22 m32 m42 m13 m23 m33 m43 m14 m24 m34 m44
 
 
 {-| Convert a record to a matrix.
 -}
 fromRecord : { m11 : Float, m21 : Float, m31 : Float, m41 : Float, m12 : Float, m22 : Float, m32 : Float, m42 : Float, m13 : Float, m23 : Float, m33 : Float, m43 : Float, m14 : Float, m24 : Float, m34 : Float, m44 : Float } -> Mat4
-fromRecord =
-    Native.MJS.m4x4fromRecord
+fromRecord { m11, m21, m31, m41, m12, m22, m32, m42, m13, m23, m33, m43, m14, m24, m34, m44 } =
+    Mat4 m11 m21 m31 m41 m12 m22 m32 m42 m13 m23 m33 m43 m14 m24 m34 m44
